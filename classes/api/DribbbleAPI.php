@@ -36,10 +36,16 @@ class DribbbleAPI extends Inspired {
 
         $json = wp_remote_get($this->config->url . 'players/' . $this->config->username . '/shots/likes?per_page=' . $this->perPage);
         
-        $results = json_decode($json['body']);
-        
-        $shots = $results->shots;
+        try {
+            $results = json_decode($json['body']);
 
-        return $shots;        
+            $shots = $results->shots;
+             
+        } catch (Exception $e) {
+            // If we get an exception just return empty array for now
+            return array();
+        }         
+        
+        return $shots;  
     }
 }

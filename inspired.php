@@ -30,9 +30,11 @@ include_once 'classes/InspiredController.php';
 include_once 'classes/interface/Inspired.php';
 include_once 'classes/api/DribbbleApi.php';
 include_once 'classes/api/TumblrApi.php';
+include_once 'classes/api/LastfmApi.php';
 include_once 'classes/config/abstract/InspiredConfig.php';
 include_once 'classes/config/DribbbleConfig.php';
 include_once 'classes/config/TumblrConfig.php';
+include_once 'classes/config/LastfmConfig.php';
 include_once 'classes/factory/InspiredFactory.php';
 
 /**
@@ -41,6 +43,7 @@ include_once 'classes/factory/InspiredFactory.php';
 
 /**
  * [inspired]
+ * @todo Move the following stuff into a class?
  * 
  * @param type $atts 
  * @todo Ditch the bespoke config for each site, just use $config->site = 'Dribbble' or similar
@@ -60,13 +63,46 @@ function inspired_func() {
         $tumblrConfig->username = $tumblrUsername;
         $inspiredObj->addSiteConfig($tumblrConfig);
     }      
+    if ($lastfmUsername = get_option('inspired_lastfm_username')) {
+        $lastfmConfig = new LastfmConfig();
+        $lastfmConfig->url = 'http://ws.audioscrobbler.com/2.0/?method=user.getlovedtracks';
+        $lastfmConfig->username = $lastfmUsername;
+        $lastfmConfig->key = get_option('inspired_lastfm_key');
+        $inspiredObj->addSiteConfig($lastfmConfig);        
+        
+    }
     
-    $items = $inspiredObj->getItems();
+// @todo
+//    if ($orderbyDate = get_option('inspired_orderby_date')) {
+//        $inspiredObj->orderByDate($orderByDate);
+//    }
+    $items = $inspiredObj->getItems();    
     
-    echo '<pre>';
-    print_r($items);
+    foreach ($items as $k=>$item) {            
+        echo '<h2>'.$k.'</h2>';
+        echo '<div id="inspired">';
+        echo '<ul class="inspired-items">';
+        
+        foreach ($item as $i=>$subitem) {
+            echo '<li><a href="'.$subitem['url'].'" target="_blank"><img src="'.$subitem['image_url'].'" alt="'.$subitem['url'].'" /></a></li>';
+        }
+        
+        echo '</ul>';
+        echo '</div>';
+    }
 }
 
+// Enqueue scripts and styles
+function inspired_scripts() {  
+    wp_deregister_script( 'jquery' );
+    wp_register_script( 'jquery', 'http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js');
+    wp_enqueue_script( 'jquery' );    
+    wp_enqueue_script('masonry', WP_PLUGIN_URL.'/inspired/js/jquery.masonry.min.js',array('jquery'),'2.0.110526',false);
+    wp_enqueue_script('inspired', WP_PLUGIN_URL.'/inspired/js/inspired.js',array('jquery'),'1.0',false);
+    wp_enqueue_style('inspired', WP_PLUGIN_URL.'/inspired/css/inspired.css',false,'1.0');    
+}
+
+add_action('init', 'inspired_scripts');
 add_shortcode('inspired', 'inspired_func');
 
 // Add shortcode support for widgets

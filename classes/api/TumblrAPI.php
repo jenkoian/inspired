@@ -32,15 +32,20 @@ class TumblrAPI extends Inspired {
 
         $xml = wp_remote_get($this->config->url.'?num=' . $this->perPage);
         
-        $simpleXml = new SimpleXMLElement($xml['body']);
-        
-        $i = 0;
-        foreach ($simpleXml->posts->post as $post) {
-            $posts[$i]['url'] = (string)$post->attributes()->url;
-            $posts[$i]['image_url'] = (string)$post->{'photo-url'}[1];  
-            $posts[$i]['date'] = (string)$post['unix-timestamp'];            
-            
-            ++$i;
+        try {
+            $simpleXml = @new SimpleXMLElement($xml['body']);       
+
+            $i = 0;
+            foreach ($simpleXml->posts->post as $post) {
+                $posts[$i]['url'] = (string)$post->attributes()->url;
+                $posts[$i]['image_url'] = (string)$post->{'photo-url'}[1];  
+                $posts[$i]['date'] = (string)$post['unix-timestamp'];            
+
+                ++$i;
+            }
+        } catch (Exception $e) {
+            // If we get an exception just return empty array for now
+            return array();
         }
 
         return $posts;        

@@ -1,0 +1,15 @@
+#inspired ol, #inspired ul {
+    list-style: none;
+}
+
+#inspired li {
+    list-style-image: none;
+    list-style-type: none;
+    margin: 0 10px 20px 10px;
+    float: left;
+    width: 220px;
+}
+
+#inspired li img {
+    width: 220px;
+}
